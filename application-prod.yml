@@ -1,7 +1,8 @@
 message: "Hello from Production Environment"
 
+spring:
   datasource:
-    url: jdbc:mysql://localhost:5433/postgres
+    url: jdbc:postgresql://localhost:5433/postgres
     username: postgres
     password: 2003
 
