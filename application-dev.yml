@@ -1,7 +1,4 @@
 message: "Hello from Dev Environment"
 
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:5433/postgres
-    username: postgres
-    password: 2003
+inventory:
+  max-items: 500
