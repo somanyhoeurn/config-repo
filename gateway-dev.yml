@@ -9,6 +9,10 @@ spring:
     web-application-type: reactive
 
   cloud:
+    loadbalancer:
+      configurations: health-check           # only route to healthy instances
+      retry:
+        enabled: true
     gateway:
       discovery:
         locator:
@@ -25,6 +29,11 @@ spring:
           filters:
             # strips "/students" before forwarding so "/students/v3/api-docs" -> "/v3/api-docs"
             - RewritePath=/students/(?<segment>.*), /${segment}
+            - name: CircuitBreaker
+              args:
+                name: studentsBreaker
+                fallbackUri: forward:/fallback/students
+      
 
 #  data:
 #    redis:
