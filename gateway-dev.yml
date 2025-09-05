@@ -16,25 +16,27 @@ spring:
       ribbon:
         enabled: false
     gateway:
-      discovery:
-        locator:
-          enabled: true
-          lowerCaseServiceId: true
-      httpclient:
-        connect-timeout: 3000
-        response-timeout: 5s
-      routes:
-        - id: students-service
-          uri: http://localhost:8090     # or lb://STUDENTS if using discovery
-          predicates:
-            - Path=/students/**
-          filters:
-            # strips "/students" before forwarding so "/students/v3/api-docs" -> "/v3/api-docs"
-            - RewritePath=/students/(?<segment>.*), /api/v1/${segment}
-            - name: CircuitBreaker
-              args:
-                name: studentsBreaker
-                fallbackUri: forward:/fallback/students
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+          httpclient:
+            connect-timeout: 3000
+            response-timeout: 5s
+          routes:
+            - id: students-service
+              uri: http://localhost:8090     # or lb://STUDENTS if using discovery
+              predicates:
+                - Path=/students/**
+              filters:
+                # strips "/students" before forwarding so "/students/v3/api-docs" -> "/v3/api-docs"
+                - RewritePath=/students/(?<segment>.*), /api/v1/${segment}
+                - name: CircuitBreaker
+                  args:
+                    name: studentsBreaker
+                    fallbackUri: forward:/fallback/students
       
 
 #  data:
