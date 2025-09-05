@@ -15,11 +15,3 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-gateway:
-  base-url: http://localhost:8765
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
