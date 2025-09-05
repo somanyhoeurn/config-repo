@@ -27,7 +27,7 @@ spring:
             response-timeout: 5s
           routes:
             - id: students-service
-              uri: http://localhost:8090     # or lb://STUDENTS if using discovery
+              uri: lb://CONFIG-CLIENT     # or lb://STUDENTS if using discovery
               predicates:
                 - Path=/students/**
               filters:
@@ -37,6 +37,28 @@ spring:
                   args:
                     name: studentsBreaker
                     fallbackUri: forward:/fallback/students
+              - id: order-service
+                uri: lb://ORDER-SERVICE    # or lb://STUDENTS if using discovery
+                predicates:
+                  - Path=/orders/**
+                filters:
+                  # strips "/students" before forwarding so "/students/v3/api-docs" -> "/v3/api-docs"
+                  - RewritePath=/orders/(?<segment>.*), /api/v1/${segment}
+                  - name: CircuitBreaker
+                    args:
+                      name: ordersBreaker
+                      fallbackUri: forward:/fallback/orders
+                - id: user-service
+                  uri: lb://USER-SERVICE    # or lb://STUDENTS if using discovery
+                  predicates:
+                    - Path=/users/**
+                  filters:
+                    # strips "/students" before forwarding so "/students/v3/api-docs" -> "/v3/api-docs"
+                    - RewritePath=/users/(?<segment>.*), /api/v1/${segment}
+                    - name: CircuitBreaker
+                      args:
+                        name: usersBreaker
+                        fallbackUri: forward:/fallback/students
       
 
 #  data:
