@@ -15,7 +15,6 @@ spring:
         enabled: true
       ribbon:
         enabled: false
-    
 
     gateway:
       server:
@@ -24,59 +23,79 @@ spring:
             locator:
               enabled: true
               lower-case-service-id: true
+      httpclient:
+        connect-timeout: 3000
+        response-timeout: 5s
 
-          httpclient:
-            connect-timeout: 3000
-            response-timeout: 5s
+      routes:
+        # --- students-service ---
+        - id: students-service
+          uri: lb://CONFIG-CLIENT
+          predicates:
+            - Path=/students/**
+          filters:
+            - RewritePath=/students/(?<segment>.*), /api/v1/${segment}
+            - name: CircuitBreaker
+              args:
+                name: studentsBreaker
+                fallbackuri: forward:/fallback/students
 
-          routes:
-            # --- students-service ---
-            - id: students-service
-              uri: lb://CONFIG-CLIENT
-              predicates:
-                - Path=/students/**
-              filters:
-                - RewritePath=/students/(?<segment>.*), /api/v1/${segment}
-                - name: CircuitBreaker
-                  args:
-                    name: studentsBreaker
-                    fallbackuri: forward:/fallback/students
+        # --- order-service ---
+        - id: order-service
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/orders/**
+          filters:
+            - RewritePath=/orders/(?<segment>.*), /api/v1/${segment}
+            - name: CircuitBreaker
+              args:
+                name: ordersBreaker
+                fallbackuri: forward:/fallback/orders
 
-            # --- order-service ---
-            - id: order-service
-              uri: lb://ORDER-SERVICE
-              predicates:
-                - Path=/orders/**
-              filters:
-                - RewritePath=/orders/(?<segment>.*), /api/v1/${segment}
-                - name: CircuitBreaker
-                  args:
-                    name: ordersBreaker
-                    fallbackuri: forward:/fallback/orders
+        # --- user-service ---
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/users/**
+          filters:
+            - RewritePath=/users/(?<segment>.*), /api/v1/${segment}
+            - name: CircuitBreaker
+              args:
+                name: usersBreaker
+                fallbackuri: forward:/fallback/users
 
-            # --- user-service ---
-            - id: user-service
-              uri: lb://USER-SERVICE
-              predicates:
-                - Path=/users/**
-              filters:
-                - RewritePath=/users/(?<segment>.*), /api/v1/${segment}
-                - name: CircuitBreaker
-                  args:
-                    name: usersBreaker
-                    fallbackuri: forward:/fallback/users
+# ✅ CORRECT INDENTATION: This is a top-level property
+resilience4j:
+  circuitbreaker:
+    instances:
+      studentsBreaker:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        failureRateThreshold: 60
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+      
+      # ✅ ADDED: Configuration for the order service circuit breaker
+      ordersBreaker:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        failureRateThreshold: 60
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
 
-    resilience4j:
-      circuitbreaker:
-        instances:
-          studentsBreaker: # Must match the name in your gateway filter
-            registerHealthIndicator: true
-            slidingWindowType: COUNT_BASED
-            slidingWindowSize: 10   # The last 10 requests are considered
-            failureRateThreshold: 60  # If 60% of requests fail, the circuit opens
-            waitDurationInOpenState: 10s # Stays open for 10 seconds before going to half-open
-            permittedNumberOfCallsInHalfOpenState: 3
-            automaticTransitionFromOpenToHalfOpenEnabled: true                
+      # ✅ ADDED: Configuration for the user service circuit breaker
+      usersBreaker:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        failureRateThreshold: 60
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
 
 eureka:
   client:
@@ -88,5 +107,4 @@ springdoc:
     path: /swagger-ui.html
     urls:
       - name: students
-        # Adjust if your backend docs live elsewhere
         url: /students/api/v1/v3/api-docs
