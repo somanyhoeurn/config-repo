@@ -20,7 +20,9 @@ spring:
         enabled: true
       inetutils:
         preferred-networks: 127.0.0.1
-        
+
+gateway:
+  base-url: http://localhost:8765
 
 eureka:
   client:
