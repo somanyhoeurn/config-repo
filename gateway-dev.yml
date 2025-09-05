@@ -30,7 +30,7 @@ spring:
             - Path=/students/**
           filters:
             # strips "/students" before forwarding so "/students/v3/api-docs" -> "/v3/api-docs"
-            - RewritePath=/students/(?<segment>.*), /${segment}
+            - RewritePath=/students/(?<segment>.*), /api/v1/${segment}
             - name: CircuitBreaker
               args:
                 name: studentsBreaker
