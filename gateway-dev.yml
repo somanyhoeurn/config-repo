@@ -13,6 +13,8 @@ spring:
       configurations: health-check           # only route to healthy instances
       retry:
         enabled: true
+      ribbon:
+        enabled: false
     gateway:
       discovery:
         locator:
