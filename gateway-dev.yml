@@ -10,59 +10,60 @@ spring:
 
   cloud:
     loadbalancer:
-      configurations: health-check           # only route to healthy instances
+      configurations: health-check
       retry:
         enabled: true
       ribbon:
         enabled: false
 
     gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
 
-      httpclient:
-        connect-timeout: 3000
-        response-timeout: 5s
+          httpclient:
+            connect-timeout: 3000
+            response-timeout: 5s
 
-      routes:
-        # --- students-service ---
-        - id: students-service
-          uri: lb://CONFIG-CLIENT           # e.g., lb://STUDENTS-SERVICE if using discovery
-          predicates:
-            - Path=/students/**
-          filters:
-            # If backend base path is /api/v1, map /students/** -> /api/v1/**
-            - RewritePath=/students/(?<segment>.*), /api/v1/${segment}
-            - name: CircuitBreaker
-              args:
-                name: studentsBreaker
-                fallbackUri: forward:/fallback/students
+          routes:
+            # --- students-service ---
+            - id: students-service
+              uri: lb://CONFIG-CLIENT
+              predicates:
+                - Path=/students/**
+              filters:
+                - RewritePath=/students/(?<segment>.*), /api/v1/${segment}
+                - name: CircuitBreaker
+                  args:
+                    name: studentsBreaker
+                    fallbackuri: forward:/fallback/students
 
-        # --- order-service ---
-        - id: order-service
-          uri: lb://ORDER-SERVICE
-          predicates:
-            - Path=/orders/**
-          filters:
-            - RewritePath=/orders/(?<segment>.*), /api/v1/${segment}
-            - name: CircuitBreaker
-              args:
-                name: ordersBreaker
-                fallbackUri: forward:/fallback/orders
+            # --- order-service ---
+            - id: order-service
+              uri: lb://ORDER-SERVICE
+              predicates:
+                - Path=/orders/**
+              filters:
+                - RewritePath=/orders/(?<segment>.*), /api/v1/${segment}
+                - name: CircuitBreaker
+                  args:
+                    name: ordersBreaker
+                    fallbackuri: forward:/fallback/orders
 
-        # --- user-service ---
-        - id: user-service
-          uri: lb://USER-SERVICE
-          predicates:
-            - Path=/users/**
-          filters:
-            - RewritePath=/users/(?<segment>.*), /api/v1/${segment}
-            - name: CircuitBreaker
-              args:
-                name: usersBreaker
-                fallbackUri: forward:/fallback/users
+            # --- user-service ---
+            - id: user-service
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/users/**
+              filters:
+                - RewritePath=/users/(?<segment>.*), /api/v1/${segment}
+                - name: CircuitBreaker
+                  args:
+                    name: usersBreaker
+                    fallbackuri: forward:/fallback/users
 
 eureka:
   client:
@@ -74,9 +75,5 @@ springdoc:
     path: /swagger-ui.html
     urls:
       - name: students
-        # NOTE: Because we rewrite /students/** -> /api/v1/**, the OpenAPI doc path
-        # on the backend likely ends up at /api/v1/v3/api-docs through the gateway.
-        # If your backend serves /v3/api-docs (no base path), either:
-        # 1) change the rewrite for that single path, or
-        # 2) set this URL accordingly.
+        # Adjust if your backend docs live elsewhere
         url: /students/api/v1/v3/api-docs
