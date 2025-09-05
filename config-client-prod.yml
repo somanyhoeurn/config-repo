@@ -18,8 +18,7 @@ spring:
    cloud:
       discovery:
         enabled: true
-      inetutils:
-        preferred-networks: 127.0.0.1
+        lowerCaseServiceId: true
 
 gateway:
   base-url: http://localhost:8765
