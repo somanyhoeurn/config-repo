@@ -15,6 +15,7 @@ spring:
         enabled: true
       ribbon:
         enabled: false
+    
 
     gateway:
       server:
@@ -64,6 +65,18 @@ spring:
                   args:
                     name: usersBreaker
                     fallbackuri: forward:/fallback/users
+
+    resilience4j:
+      circuitbreaker:
+        instances:
+          studentsBreaker: # Must match the name in your gateway filter
+            registerHealthIndicator: true
+            slidingWindowType: COUNT_BASED
+            slidingWindowSize: 10   # The last 10 requests are considered
+            failureRateThreshold: 60  # If 60% of requests fail, the circuit opens
+            waitDurationInOpenState: 10s # Stays open for 10 seconds before going to half-open
+            permittedNumberOfCallsInHalfOpenState: 3
+            automaticTransitionFromOpenToHalfOpenEnabled: true                
 
 eureka:
   client:
